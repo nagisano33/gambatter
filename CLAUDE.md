@@ -1,133 +1,73 @@
-# Gambatter Flutter Project - Claude Code Configuration
+# CLAUDE.md
 
-## Project Overview
-- **Project Name**: Gambatter
-- **Description**: 日々の「頑張り」を記録・可視化するモチベーション管理アプリ
-- **Platform**: iOS, Android対応
-- **Version**: 1.0.0+1
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Flutter Environment
-- **Dart SDK**: >=2.19.4 <3.0.0
-- **Flutter Version**: 標準版（最新安定版推奨）
+## プロジェクト概要
 
-## Dependencies
-### Main Dependencies
-- `flutter` (SDK)
-- `cupertino_icons: ^1.0.2` - iOS風アイコン
-- `sqflite: ^2.2.8+4` - SQLiteデータベース
-- `path_provider: ^2.1.1` - ファイルパス取得
-- `path: ^1.8.0` - パス操作ユーティリティ
+Gambatterは日々の「頑張り」を記録するFlutterモバイルアプリです。ユーザーは1日1回ボタンをタップして頑張りを記録し、連続記録日数と月間カレンダーで継続状況を可視化できます。1日1回制限により毎日の取り組みを促進します。
 
-### Dev Dependencies
-- `flutter_test` (SDK)
-- `flutter_lints: ^2.0.0` - Dartコード品質チェック
+## 必須コマンド
 
-## Project Structure
-```
-lib/
-├── main.dart                              # アプリのエントリーポイント
-├── my_homepage.dart                       # メイン画面（3つのウィジェット統合）
-├── database_helper.dart                   # SQLiteデータベースヘルパー
-└── widgets/                               # UIコンポーネント
-    ├── consecutive_days_display.dart      # 連続記録日数表示ウィジェット
-    ├── effort_button.dart                 # 頑張ったボタンウィジェット
-    └── monthly_calendar.dart              # 月間カレンダーウィジェット
+```bash
+# 開発
+flutter pub get                    # 依存関係インストール
+flutter run                       # デバッグモードで実行
+flutter analyze                   # 静的コード解析
+
+# ビルド
+flutter build apk                 # Android APKビルド
+flutter build ios                 # iOS IPAビルド
+flutter clean && flutter pub get  # 問題時のクリーンビルド
+
+# テスト
+flutter test                      # 全テスト実行
 ```
 
-## Key Features
-- **頑張り記録機能**: 1日1回の記録制限付き
-- **連続記録日数表示**: 継続日数の可視化
-- **月間カレンダー**: 記録履歴のカレンダー表示
-- **SQLiteデータ永続化**: ローカルデータベース管理
-- **将来拡張対応**: カテゴリ・メモ・クラウド同期対応設計
+## アーキテクチャ概要
 
-## Architecture Pattern
-- **Widget分割設計**: React風のコンポーネント分割
-- **StatefulWidget**: 状態管理とライフサイクル管理
-- **DatabaseHelper**: シングルトンパターンでDB操作分離
-- **エラーハンドリング**: 適切な例外処理とユーザーフィードバック
+Reactライクな**ウィジェットベースのコンポーネント設計**を採用：
 
-## UI Components
-### ConsecutiveDaysDisplay
-- 連続記録日数の表示
-- 炎アイコンと数値のレイアウト
-- Material Design 3 準拠
+### 核となるコンポーネント構造
+- **MyHomePage**: 3つの子ウィジェットを統合し、アプリ状態を管理するメイン画面
+- **ConsecutiveDaysDisplay**: 炎アイコン付きの連続記録日数表示
+- **EffortButton**: ローディング・完了状態を持つアニメーション付きボタン
+- **MonthlyCalendar**: 記録日をハイライト表示するカレンダーグリッド
 
-### EffortButton
-- タップアニメーション付きボタン
-- 記録済み状態の視覚的フィードバック
-- ローディング状態の表示
+### データ層
+- **DatabaseHelper**: SQLite操作を管理するシングルトンパターン
+- **effort_recordsテーブル**: 将来拡張用フィールド（category_id、memo）を含むコアデータ
 
-### MonthlyCalendar
-- 月間グリッドレイアウト
-- 記録日のハイライト表示
-- 月切り替えナビゲーション
+### 主要データフロー
+1. ユーザーが頑張りボタンをタップ → 今日の記録有無をチェック
+2. 未記録の場合 → レコード挿入 → 連続記録日数を再計算
+3. カレンダー表示を更新 → 成功フィードバック表示
 
-## Database Schema
+## データベーススキーマ
+
 ```sql
 CREATE TABLE effort_records (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   recorded_date DATE NOT NULL UNIQUE,     -- YYYY-MM-DD形式
-  recorded_at DATETIME NOT NULL,          -- 記録時刻
-  category_id INTEGER,                    -- 将来のカテゴリ機能用
-  memo TEXT,                             -- 将来のメモ機能用
+  recorded_at DATETIME NOT NULL,          -- タイムスタンプ
+  category_id INTEGER,                    -- 将来使用
+  memo TEXT,                             -- 将来使用
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-## Common Commands
-```bash
-# 依存関係インストール
-flutter pub get
+## 重要なビジネスロジック
 
-# アプリ実行（開発モード）
-flutter run
+### 連続記録日数の計算
+`getConsecutiveDaysCount()`メソッドは今日から過去に遡り、記録のある連続日数をカウントします。記録の途切れで停止し、今日が未記録の場合の edge case も処理します。
 
-# テスト実行
-flutter test
+### 1日1回制限の実装
+`hasEffortRecordForDate()`は対象日の既存エントリをチェックし、新規記録前に重複レコードを防止します。
 
-# コード品質チェック
-flutter analyze
+## 将来拡張設計
 
-# APK/IPAビルド
-flutter build apk
-flutter build ios
+データベーススキーマには未使用フィールド（category_id、memo）を含み、計画機能をサポート：
+- **フェーズ2**: カテゴリ、メモ、統計ダッシュボード
+- **フェーズ3**: クラウド同期、マルチデバイス、通知、ゲーミフィケーション
 
-# クリーンビルド
-flutter clean && flutter pub get
-```
-
-## Key Methods (DatabaseHelper)
-- `insertEffortRecord(DateTime)` - 頑張り記録の保存
-- `hasEffortRecordForDate(DateTime)` - 日付での重複チェック
-- `getEffortRecordsForMonth(int, int)` - 月間記録取得
-- `getConsecutiveDaysCount()` - 連続記録日数計算
-
-## Coding Conventions
-- Dartの標準スタイルガイドに従う
-- `flutter_lints`の推奨ルールを適用
-- クラス名はPascalCase、変数名はcamelCase
-- プライベートメンバーは先頭にアンダースコア
-- Widgetの小分割による保守性向上
-- 適切なエラーハンドリングとローディング状態管理
-
-## File Naming
-- Dartファイルは snake_case
-- クラス名は PascalCase
-- 定数は SCREAMING_SNAKE_CASE
-- Widgetファイルは機能名_widget形式推奨
-
-## Future Roadmap
-### Phase 2 (中期)
-- カテゴリ機能（勉強、運動、仕事など）
-- メモ機能
-- 統計画面（週間・月間グラフ）
-- 目標設定機能
-
-### Phase 3 (長期)
-- クラウド同期
-- 複数デバイス対応
-- リマインダー機能
-- 達成バッジ・励ましメッセージ
-- データエクスポート機能
+ウィジェット構造は拡張しやすく設計されており、新機能はメイン画面レイアウトに追加ウィジェットとして組み込めます。
