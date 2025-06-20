@@ -2,18 +2,9 @@ import 'package:flutter/material.dart';
 import 'design_tokens.dart';
 
 class AppTheme {
-  static const String defaultTheme = 'default';
-  static const String greenTheme = 'green';
-  static const String digitalGovDarkTheme = 'digital-gov-dark';
-
-  static Map<String, DesignTokens> get availableTokens => {
-        defaultTheme: DefaultDesignTokens(),
-        digitalGovDarkTheme: DigitalGovDarkDesignTokens(),
-      };
-
   static ThemeData createTheme(DesignTokens tokens) {
-    // ダークテーマかどうかを判定
-    final isDark = tokens is DigitalGovDarkDesignTokens;
+    // デジタル庁ダークテーマ固定
+    final isDark = true;
 
     return ThemeData(
       useMaterial3: true,
@@ -112,16 +103,4 @@ class AppTheme {
     );
   }
 
-  static ThemeData getThemeByName(String themeName) {
-    final tokens = availableTokens[themeName] ?? DefaultDesignTokens();
-    return createTheme(tokens);
-  }
-}
-
-// Extension to easily access design tokens from BuildContext
-extension DesignTokensExtension on BuildContext {
-  DesignTokens get tokens {
-    // This will be set by the ThemeProvider later
-    return DefaultDesignTokens();
-  }
 }

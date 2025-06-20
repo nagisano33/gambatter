@@ -118,29 +118,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.palette),
-            tooltip: 'テーマ選択',
-            onSelected: (String themeName) {
-              widget.themeProvider.setTheme(themeName);
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'digital-gov-dark',
-                child: Text('デジタル庁ダーク'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'default',
-                child: Text('デフォルト'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'green',
-                child: Text('グリーン'),
-              ),
-            ],
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(

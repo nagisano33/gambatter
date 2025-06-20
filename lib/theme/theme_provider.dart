@@ -3,33 +3,10 @@ import 'design_tokens.dart';
 import 'app_theme.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  String _currentThemeName = AppTheme.digitalGovDarkTheme; // デフォルトをダークテーマに
-  late DesignTokens _currentTokens;
+  final DesignTokens _currentTokens = DigitalGovDarkDesignTokens();
 
-  ThemeProvider() {
-    _currentTokens = AppTheme.availableTokens[_currentThemeName]!;
-  }
-
-  String get currentThemeName => _currentThemeName;
   DesignTokens get currentTokens => _currentTokens;
   ThemeData get currentTheme => AppTheme.createTheme(_currentTokens);
-
-  List<String> get availableThemeNames => AppTheme.availableTokens.keys.toList();
-
-  void setTheme(String themeName) {
-    if (AppTheme.availableTokens.containsKey(themeName)) {
-      _currentThemeName = themeName;
-      _currentTokens = AppTheme.availableTokens[themeName]!;
-      notifyListeners();
-    }
-  }
-
-  void toggleTheme() {
-    final themeNames = availableThemeNames;
-    final currentIndex = themeNames.indexOf(_currentThemeName);
-    final nextIndex = (currentIndex + 1) % themeNames.length;
-    setTheme(themeNames[nextIndex]);
-  }
 }
 
 // InheritedWidget to provide design tokens throughout the widget tree
