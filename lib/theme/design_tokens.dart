@@ -132,30 +132,30 @@ class DefaultDesignTokens implements DesignTokens {
   double get consecutiveDaysContainerHeight => 80.0;
 }
 
-class GreenDesignTokens implements DesignTokens {
-  // Colors - Green theme variant
+class DigitalGovDarkDesignTokens implements DesignTokens {
+  // Colors - デジタル庁デザインシステム準拠のダークテーマ
   @override
-  Color get primary => const Color(0xFF388E3C);
+  Color get primary => const Color(0xFF4285F4); // デジタル庁ブルー（少し明るく調整）
   @override
-  Color get onPrimary => const Color(0xFFFFFFFF);
+  Color get onPrimary => const Color(0xFF000000);
   @override
-  Color get primaryContainer => const Color(0xFFC8E6C9);
+  Color get primaryContainer => const Color(0xFF1A1A1A); // 深いグレー
   @override
-  Color get onPrimaryContainer => const Color(0xFF1B5E20);
+  Color get onPrimaryContainer => const Color(0xFFE3F2FD);
   @override
-  Color get secondary => const Color(0xFF689F38);
+  Color get secondary => const Color(0xFF64748B); // スレートグレー
   @override
   Color get onSecondary => const Color(0xFFFFFFFF);
   @override
-  Color get surface => const Color(0xFFF1F8E9);
+  Color get surface => const Color(0xFF121212); // ダークサーフェス
   @override
-  Color get onSurface => const Color(0xFF1B5E20);
+  Color get onSurface => const Color(0xFFE1E1E1); // 高コントラスト文字
   @override
-  Color get surfaceVariant => const Color(0xFFDCEDC8);
+  Color get surfaceVariant => const Color(0xFF2A2A2A); // サーフェスバリアント
   @override
-  Color get onSurfaceVariant => const Color(0xFF33691E);
+  Color get onSurfaceVariant => const Color(0xFFB0B0B0);
   @override
-  Color get outline => const Color(0xFF8BC34A);
+  Color get outline => const Color(0xFF3A3A3A); // 境界線
   @override
   Color get success => const Color(0xFF4CAF50);
   @override
@@ -163,37 +163,37 @@ class GreenDesignTokens implements DesignTokens {
   @override
   Color get warning => const Color(0xFFFF9800);
   @override
-  Color get onWarning => const Color(0xFFFFFFFF);
+  Color get onWarning => const Color(0xFF000000);
   @override
-  Color get error => const Color(0xFFD32F2F);
+  Color get error => const Color(0xFFCF6679); // ダークテーマ用エラーカラー
   @override
-  Color get onError => const Color(0xFFFFFFFF);
+  Color get onError => const Color(0xFF000000);
 
-  // Spacing (same as default)
+  // Spacing - デジタル庁の8px基準
   @override
-  double get spacingXs => 4.0;
+  double get spacingXs => 4.0;  // 8px ÷ 2
   @override
-  double get spacingSm => 8.0;
+  double get spacingSm => 8.0;  // 基準値
   @override
-  double get spacingMd => 16.0;
+  double get spacingMd => 16.0; // 8px × 2
   @override
-  double get spacingLg => 24.0;
+  double get spacingLg => 24.0; // 8px × 3
   @override
-  double get spacingXl => 32.0;
+  double get spacingXl => 32.0; // 8px × 4
   @override
-  double get spacingXxl => 48.0;
+  double get spacingXxl => 48.0; // 8px × 6
 
-  // Border Radius (slightly more rounded)
+  // Border Radius - 控えめで洗練された角丸
   @override
-  double get radiusXs => 6.0;
+  double get radiusXs => 2.0;
   @override
-  double get radiusSm => 10.0;
+  double get radiusSm => 4.0;
   @override
-  double get radiusMd => 14.0;
+  double get radiusMd => 8.0;
   @override
-  double get radiusLg => 18.0;
+  double get radiusLg => 12.0;
 
-  // Typography (same as default)
+  // Typography - 読みやすさを重視
   @override
   double get fontSizeXs => 12.0;
   @override
@@ -203,15 +203,15 @@ class GreenDesignTokens implements DesignTokens {
   @override
   double get fontSizeLg => 18.0;
   @override
-  double get fontSizeXl => 24.0;
+  double get fontSizeXl => 22.0; // 少し控えめに
   @override
-  double get fontSizeXxl => 32.0;
+  double get fontSizeXxl => 28.0; // 少し控えめに
 
-  // Component specific
+  // Component specific - シックな印象
   @override
-  double get buttonHeight => 80.0;
+  double get buttonHeight => 56.0; // 少し低く、洗練された印象
   @override
-  double get calendarCellSize => 48.0;
+  double get calendarCellSize => 44.0; // 少し小さく
   @override
-  double get consecutiveDaysContainerHeight => 80.0;
+  double get consecutiveDaysContainerHeight => 72.0; // 少し低く
 }

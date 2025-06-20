@@ -3,7 +3,7 @@ import 'design_tokens.dart';
 import 'app_theme.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  String _currentThemeName = AppTheme.defaultTheme;
+  String _currentThemeName = AppTheme.digitalGovDarkTheme; // デフォルトをダークテーマに
   late DesignTokens _currentTokens;
 
   ThemeProvider() {

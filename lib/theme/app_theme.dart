@@ -4,31 +4,52 @@ import 'design_tokens.dart';
 class AppTheme {
   static const String defaultTheme = 'default';
   static const String greenTheme = 'green';
+  static const String digitalGovDarkTheme = 'digital-gov-dark';
 
   static Map<String, DesignTokens> get availableTokens => {
-    defaultTheme: DefaultDesignTokens(),
-    greenTheme: GreenDesignTokens(),
-  };
+        defaultTheme: DefaultDesignTokens(),
+        digitalGovDarkTheme: DigitalGovDarkDesignTokens(),
+      };
 
   static ThemeData createTheme(DesignTokens tokens) {
+    // ダークテーマかどうかを判定
+    final isDark = tokens is DigitalGovDarkDesignTokens;
+
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.light(
-        primary: tokens.primary,
-        onPrimary: tokens.onPrimary,
-        primaryContainer: tokens.primaryContainer,
-        onPrimaryContainer: tokens.onPrimaryContainer,
-        secondary: tokens.secondary,
-        onSecondary: tokens.onSecondary,
-        surface: tokens.surface,
-        onSurface: tokens.onSurface,
-        surfaceVariant: tokens.surfaceVariant,
-        onSurfaceVariant: tokens.onSurfaceVariant,
-        outline: tokens.outline,
-        error: tokens.error,
-        onError: tokens.onError,
-      ),
-      
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      colorScheme: isDark
+          ? ColorScheme.dark(
+              primary: tokens.primary,
+              onPrimary: tokens.onPrimary,
+              primaryContainer: tokens.primaryContainer,
+              onPrimaryContainer: tokens.onPrimaryContainer,
+              secondary: tokens.secondary,
+              onSecondary: tokens.onSecondary,
+              surface: tokens.surface,
+              onSurface: tokens.onSurface,
+              surfaceVariant: tokens.surfaceVariant,
+              onSurfaceVariant: tokens.onSurfaceVariant,
+              outline: tokens.outline,
+              error: tokens.error,
+              onError: tokens.onError,
+            )
+          : ColorScheme.light(
+              primary: tokens.primary,
+              onPrimary: tokens.onPrimary,
+              primaryContainer: tokens.primaryContainer,
+              onPrimaryContainer: tokens.onPrimaryContainer,
+              secondary: tokens.secondary,
+              onSecondary: tokens.onSecondary,
+              surface: tokens.surface,
+              onSurface: tokens.onSurface,
+              surfaceVariant: tokens.surfaceVariant,
+              onSurfaceVariant: tokens.onSurfaceVariant,
+              outline: tokens.outline,
+              error: tokens.error,
+              onError: tokens.onError,
+            ),
+
       // Button themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -56,22 +77,37 @@ class AppTheme {
         size: tokens.fontSizeXl,
       ),
 
-      // Text themes
+      // Text themes - デジタル庁準拠のタイポグラフィ
       textTheme: TextTheme(
         headlineMedium: TextStyle(
           fontSize: tokens.fontSizeXl,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600, // 少し軽めに
+          letterSpacing: -0.5, // 文字間隔を調整
         ),
         titleLarge: TextStyle(
           fontSize: tokens.fontSizeLg,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.25,
         ),
         bodyMedium: TextStyle(
           fontSize: tokens.fontSizeMd,
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0.1,
         ),
         labelMedium: TextStyle(
           fontSize: tokens.fontSizeSm,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.4,
         ),
+      ),
+
+      // AppBar theme - ダークテーマ対応
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: isDark ? tokens.surface : tokens.primary,
+        foregroundColor: isDark ? tokens.onSurface : tokens.onPrimary,
+        surfaceTintColor: Colors.transparent,
       ),
     );
   }
