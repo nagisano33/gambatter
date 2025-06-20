@@ -6,8 +6,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Gambatterは日々の「頑張り」を記録するFlutterモバイルアプリです。ユーザーは1日1回ボタンをタップして頑張りを記録し、連続記録日数と月間カレンダーで継続状況を可視化できます。1日1回制限により毎日の取り組みを促進します。
 
-## 必須コマンド
+## 開発ワークフロー
 
+**重要**: このプロジェクトでコード変更を行う際は、必ず以下の手順に従ってください：
+
+### 1. 作業開始時の必須手順
+```bash
+# 現在のブランチ確認
+git branch
+
+# featureブランチ作成・切り替え（作業内容に応じた名前を使用）
+git checkout -b feature/機能名-説明
+
+# 例:
+# git checkout -b feature/digital-gov-design-system
+# git checkout -b feature/add-statistics-dashboard
+# git checkout -b fix/calendar-display-bug
+```
+
+### 2. 作業完了時の手順
+```bash
+# 変更をステージング
+git add .
+
+# コミット（日本語または英語でOK）
+git commit -m "feat: 機能の説明"
+
+# 必要に応じてメインブランチにマージ
+git checkout main
+git merge feature/機能名-説明
+
+# featureブランチ削除（任意）
+git branch -d feature/機能名-説明
+```
+
+### 3. 開発コマンド
 ```bash
 # 開発
 flutter pub get                    # 依存関係インストール
