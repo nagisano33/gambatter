@@ -60,20 +60,50 @@ flutter test                      # 全テスト実行
 
 Reactライクな**ウィジェットベースのコンポーネント設計**を採用：
 
+### プロジェクト構造
+```
+lib/
+├── main.dart                    # アプリエントリーポイント
+├── my_homepage.dart             # メイン画面・状態管理
+├── database_helper.dart         # SQLiteデータ層
+├── theme/                       # デザインシステム
+│   ├── app_theme.dart          # テーマ設定
+│   ├── design_tokens.dart      # デザイントークン
+│   └── theme_provider.dart     # テーマプロバイダー
+└── widgets/                     # UIコンポーネント
+    ├── consecutive_days_display.dart
+    ├── effort_button.dart
+    └── monthly_calendar.dart
+```
+
 ### 核となるコンポーネント構造
 - **MyHomePage**: 3つの子ウィジェットを統合し、アプリ状態を管理するメイン画面
-- **ConsecutiveDaysDisplay**: 炎アイコン付きの連続記録日数表示
-- **EffortButton**: ローディング・完了状態を持つアニメーション付きボタン
-- **MonthlyCalendar**: 記録日をハイライト表示するカレンダーグリッド
+  - 5つの重要な状態変数を管理：`_consecutiveDays`、`_isRecordedToday`、`_isLoading`、`_recordedDates`、`_currentMonth`
+  - データベースとUIコンポーネント間の調整役
+- **ConsecutiveDaysDisplay**: 炎アイコン付きの連続記録日数表示（StatelessWidget）
+- **EffortButton**: ローディング・完了状態を持つアニメーション付きボタン（AnimationController使用）
+- **MonthlyCalendar**: 記録日をハイライト表示するカレンダーグリッド（42日グリッド = 6週×7日）
 
 ### データ層
 - **DatabaseHelper**: SQLite操作を管理するシングルトンパターン
+  - 遅延初期化でパフォーマンス最適化
+  - 重要メソッド：`getConsecutiveDaysCount()`（複雑な連続日数計算）、`hasEffortRecordForDate()`（重複防止）
 - **effort_recordsテーブル**: 将来拡張用フィールド（category_id、memo）を含むコアデータ
+
+### テーマシステム（デザイントークンアーキテクチャ）
+- **デザイントークン**: 抽象インターフェース + 具象実装（デジタル庁デザインシステム準拠のダークテーマ固定）
+- **ThemeProvider**: ChangeNotifier + InheritedWidgetによる効率的なテーマ配信
+- **カスタム拡張**: `context.designTokens`で簡単アクセス
 
 ### 主要データフロー
 1. ユーザーが頑張りボタンをタップ → 今日の記録有無をチェック
 2. 未記録の場合 → レコード挿入 → 連続記録日数を再計算
 3. カレンダー表示を更新 → 成功フィードバック表示
+
+### 状態管理パターン
+- **ローカル状態**: 各ウィジェットが独自のUI状態を管理
+- **共有状態**: テーマのみChangeNotifier + InheritedWidgetで管理
+- **データ状態**: メインコーディネーターからの直接データベースアクセス
 
 ## データベーススキーマ
 
@@ -104,3 +134,27 @@ CREATE TABLE effort_records (
 - **フェーズ3**: クラウド同期、マルチデバイス、通知、ゲーミフィケーション
 
 ウィジェット構造は拡張しやすく設計されており、新機能はメイン画面レイアウトに追加ウィジェットとして組み込めます。
+
+## 依存関係
+
+### コア依存関係
+- `sqflite: ^2.2.8+4` - SQLiteデータベース
+- `path_provider: ^2.1.1` - ファイルシステムパス
+- `path: ^1.8.0` - パス操作ユーティリティ
+
+### 開発依存関係
+- `flutter_lints: ^2.0.0` - コード品質ルール
+
+## 重要な実装パターン
+
+### エラーハンドリング
+MyHomePageの`_recordEffort()`メソッドでtry-catch + SnackBarによるユーザーフィードバックパターンを採用。
+
+### パフォーマンス最適化
+- StatelessWidget（ConsecutiveDaysDisplay）とStatefulWidget（EffortButton、MonthlyCalendar）の適切な使い分け
+- DatabaseHelperのシングルトンパターンによるインスタンス管理
+- InheritedWidgetによる効率的なテーマ配信
+
+### テストの現状
+- 基本的なウィジェットテストが存在するが更新が必要
+- ビジネスロジックのユニットテストとデータベース操作の統合テストが未実装
