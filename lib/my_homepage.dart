@@ -3,11 +3,17 @@ import 'database_helper.dart';
 import 'widgets/consecutive_days_display.dart';
 import 'widgets/effort_button.dart';
 import 'widgets/monthly_calendar.dart';
+import 'theme/theme_provider.dart';
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({
+    super.key, 
+    required this.title,
+    required this.themeProvider,
+  });
 
   final String title;
+  final ThemeProvider themeProvider;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -107,29 +113,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.designTokens;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.palette),
+            onPressed: () {
+              widget.themeProvider.toggleTheme();
+            },
+            tooltip: 'テーマ切り替え',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            SizedBox(height: tokens.spacingMd),
             ConsecutiveDaysDisplay(consecutiveDays: _consecutiveDays),
-            const SizedBox(height: 16),
+            SizedBox(height: tokens.spacingMd),
             EffortButton(
               onPressed: _recordEffort,
               isRecordedToday: _isRecordedToday,
               isLoading: _isLoading,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: tokens.spacingMd),
             MonthlyCalendar(
               recordedDates: _recordedDates,
               onMonthChanged: _onMonthChanged,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: tokens.spacingMd),
           ],
         ),
       ),

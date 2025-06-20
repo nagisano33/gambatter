@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/theme_provider.dart';
 
 class ConsecutiveDaysDisplay extends StatelessWidget {
   final int consecutiveDays;
@@ -10,12 +11,20 @@ class ConsecutiveDaysDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.designTokens;
+    
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        vertical: tokens.spacingLg, 
+        horizontal: tokens.spacingMd,
+      ),
+      margin: EdgeInsets.symmetric(
+        horizontal: tokens.spacingMd, 
+        vertical: tokens.spacingSm,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(tokens.radiusMd),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -23,9 +32,9 @@ class ConsecutiveDaysDisplay extends StatelessWidget {
           Icon(
             Icons.local_fire_department,
             color: Theme.of(context).colorScheme.onPrimaryContainer,
-            size: 32,
+            size: tokens.fontSizeXxl,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: tokens.spacingSm + tokens.spacingXs),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/theme_provider.dart';
 
 class EffortButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -54,8 +55,13 @@ class _EffortButtonState extends State<EffortButton>
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.designTokens;
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: tokens.spacingXl, 
+        vertical: tokens.spacingMd,
+      ),
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
@@ -63,7 +69,7 @@ class _EffortButtonState extends State<EffortButton>
             scale: _scaleAnimation.value,
             child: SizedBox(
               width: double.infinity,
-              height: 80,
+              height: tokens.buttonHeight,
               child: ElevatedButton(
                 onPressed: _handleTap,
                 style: ElevatedButton.styleFrom(
@@ -74,15 +80,15 @@ class _EffortButtonState extends State<EffortButton>
                       ? Theme.of(context).colorScheme.onSurfaceVariant
                       : Theme.of(context).colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(tokens.radiusLg),
                   ),
                   elevation: widget.isRecordedToday ? 0 : 4,
                 ),
                 child: widget.isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
+                    ? SizedBox(
+                        width: tokens.spacingLg,
+                        height: tokens.spacingLg,
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2,
                         ),
                       )
@@ -93,15 +99,15 @@ class _EffortButtonState extends State<EffortButton>
                             widget.isRecordedToday
                                 ? Icons.check_circle
                                 : Icons.favorite,
-                            size: 32,
+                            size: tokens.fontSizeXxl,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: tokens.spacingSm + tokens.spacingXs),
                           Text(
                             widget.isRecordedToday
                                 ? '今日は頑張りました！'
                                 : '今日も頑張った！',
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: tokens.fontSizeLg,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

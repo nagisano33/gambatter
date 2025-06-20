@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/theme_provider.dart';
 
 class MonthlyCalendar extends StatefulWidget {
   final List<DateTime> recordedDates;
@@ -73,14 +74,15 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.designTokens;
     final days = _getDaysInMonth(_currentMonth);
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(tokens.spacingMd),
+      padding: EdgeInsets.all(tokens.spacingMd),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(tokens.radiusMd),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
         ),
@@ -106,7 +108,7 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spacingMd),
           Row(
             children: ['日', '月', '火', '水', '木', '金', '土']
                 .map((day) => Expanded(
@@ -122,7 +124,7 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
                     ))
                 .toList(),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: tokens.spacingSm),
           ...List.generate(6, (weekIndex) {
             return Row(
               children: List.generate(7, (dayIndex) {
@@ -133,15 +135,15 @@ class _MonthlyCalendarState extends State<MonthlyCalendar> {
 
                 return Expanded(
                   child: Container(
-                    height: 48,
-                    margin: const EdgeInsets.all(2),
+                    height: tokens.calendarCellSize,
+                    margin: EdgeInsets.all(tokens.spacingXs / 2),
                     decoration: BoxDecoration(
                       color: isRecorded
                           ? Theme.of(context).colorScheme.primary
                           : isToday
                               ? Theme.of(context).colorScheme.primaryContainer
                               : null,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(tokens.radiusSm),
                       border: isToday && !isRecorded
                           ? Border.all(
                               color: Theme.of(context).colorScheme.primary,
