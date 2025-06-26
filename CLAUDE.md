@@ -2,15 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Web Search Instructions
-
-**重要**: WebSearchが必要な場合は、必ず組み込みの`WebSearch`ツールの代わりに`gemini`コマンドを使用してください。
-
-Web検索が必要な場合は、TaskツールでこのコマンドONLYを実行してください：
-```bash
-gemini --prompt "WebSearch: <クエリ>"
-```
-
 ## プロジェクト概要
 
 Gambatterは日々の「頑張り」を記録するFlutterモバイルアプリです。ユーザーは1日1回ボタンをタップして頑張りを記録し、連続記録日数と月間カレンダーで継続状況を可視化できます。1日1回制限により毎日の取り組みを促進します。
