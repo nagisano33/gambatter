@@ -3,43 +3,24 @@ import 'design_tokens.dart';
 
 class AppTheme {
   static ThemeData createTheme(DesignTokens tokens) {
-    // デジタル庁ダークテーマ固定
-    final isDark = true;
-
     return ThemeData(
       useMaterial3: true,
-      brightness: isDark ? Brightness.dark : Brightness.light,
-      colorScheme: isDark
-          ? ColorScheme.dark(
-              primary: tokens.primary,
-              onPrimary: tokens.onPrimary,
-              primaryContainer: tokens.primaryContainer,
-              onPrimaryContainer: tokens.onPrimaryContainer,
-              secondary: tokens.secondary,
-              onSecondary: tokens.onSecondary,
-              surface: tokens.surface,
-              onSurface: tokens.onSurface,
-              surfaceVariant: tokens.surfaceVariant,
-              onSurfaceVariant: tokens.onSurfaceVariant,
-              outline: tokens.outline,
-              error: tokens.error,
-              onError: tokens.onError,
-            )
-          : ColorScheme.light(
-              primary: tokens.primary,
-              onPrimary: tokens.onPrimary,
-              primaryContainer: tokens.primaryContainer,
-              onPrimaryContainer: tokens.onPrimaryContainer,
-              secondary: tokens.secondary,
-              onSecondary: tokens.onSecondary,
-              surface: tokens.surface,
-              onSurface: tokens.onSurface,
-              surfaceVariant: tokens.surfaceVariant,
-              onSurfaceVariant: tokens.onSurfaceVariant,
-              outline: tokens.outline,
-              error: tokens.error,
-              onError: tokens.onError,
-            ),
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: tokens.primary,
+        onPrimary: tokens.onPrimary,
+        primaryContainer: tokens.primaryContainer,
+        onPrimaryContainer: tokens.onPrimaryContainer,
+        secondary: tokens.secondary,
+        onSecondary: tokens.onSecondary,
+        surface: tokens.surface,
+        onSurface: tokens.onSurface,
+        surfaceVariant: tokens.surfaceVariant,
+        onSurfaceVariant: tokens.onSurfaceVariant,
+        outline: tokens.outline,
+        error: tokens.error,
+        onError: tokens.onError,
+      ),
 
       // Button themes
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -96,11 +77,10 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         elevation: 0,
         centerTitle: true,
-        backgroundColor: isDark ? tokens.surface : tokens.primary,
-        foregroundColor: isDark ? tokens.onSurface : tokens.onPrimary,
+        backgroundColor: tokens.surface,
+        foregroundColor: tokens.onSurface,
         surfaceTintColor: Colors.transparent,
       ),
     );
   }
-
 }

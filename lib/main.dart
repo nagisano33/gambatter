@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'my_homepage.dart';
+import 'navigation/app_navigation.dart';
 import 'theme/theme_provider.dart';
 
 void main() {
@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
           child: MaterialApp(
             title: 'Gambatter',
             theme: _themeProvider.currentTheme,
-            home: MyHomePage(
+            home: AppNavigation(
               title: 'Gambatter',
               themeProvider: _themeProvider,
             ),
