@@ -64,25 +64,34 @@ Reactライクな**ウィジェットベースのコンポーネント設計**�
 ```
 lib/
 ├── main.dart                    # アプリエントリーポイント
-├── my_homepage.dart             # メイン画面・状態管理
 ├── database_helper.dart         # SQLiteデータ層
+├── navigation/                  # ナビゲーション管理
+│   └── app_navigation.dart     # BottomNavigationBar管理
+├── screens/                     # 画面レベルコンポーネント
+│   ├── flame_record_screen.dart # 炎ボタン専用画面
+│   └── statistics_screen.dart   # 統計表示画面
 ├── theme/                       # デザインシステム
 │   ├── app_theme.dart          # テーマ設定
-│   ├── design_tokens.dart      # デザイントークン
+│   ├── design_tokens.dart      # デザイントークン（抽象+具象）
 │   └── theme_provider.dart     # テーマプロバイダー
 └── widgets/                     # UIコンポーネント
-    ├── consecutive_days_display.dart
-    ├── effort_button.dart
-    └── monthly_calendar.dart
+    ├── consecutive_days_display.dart # 連続記録日数表示
+    ├── monthly_calendar.dart    # 月間カレンダー
+    ├── flame_ignition_widget.dart # 高度な炎アニメーション
+    └── swipe_guide_animation.dart # スワイプガイドアニメーション
 ```
 
-### 核となるコンポーネント構造
-- **MyHomePage**: 3つの子ウィジェットを統合し、アプリ状態を管理するメイン画面
-  - 5つの重要な状態変数を管理：`_consecutiveDays`、`_isRecordedToday`、`_isLoading`、`_recordedDates`、`_currentMonth`
-  - データベースとUIコンポーネント間の調整役
-- **ConsecutiveDaysDisplay**: 炎アイコン付きの連続記録日数表示（StatelessWidget）
-- **EffortButton**: ローディング・完了状態を持つアニメーション付きボタン（AnimationController使用）
-- **MonthlyCalendar**: 記録日をハイライト表示するカレンダーグリッド（42日グリッド = 6週×7日）
+### 現在のアーキテクチャ（2画面構成）
+- **AppNavigation**: BottomNavigationBarによる画面管理
+  - FlameRecordScreen（炎ボタン専用画面）
+  - StatisticsScreen（統計表示画面）
+- **FlameRecordScreen**: スワイプ点火機能の中核画面
+  - 画面全体でのスワイプ検出（ヘッダー・フッター除く）
+  - FlameIgnitionWidgetとSwipeGuideAnimationを統合
+  - 記録完了後の自動画面遷移
+- **StatisticsScreen**: 既存ウィジェットを統合した統計表示
+  - ConsecutiveDaysDisplay + MonthlyCalendar
+  - リフレッシュ機能付き
 
 ### データ層
 - **DatabaseHelper**: SQLite操作を管理するシングルトンパターン
@@ -95,15 +104,17 @@ lib/
 - **ThemeProvider**: ChangeNotifier + InheritedWidgetによる効率的なテーマ配信
 - **カスタム拡張**: `context.designTokens`で簡単アクセス
 
-### 主要データフロー
-1. ユーザーが頑張りボタンをタップ → 今日の記録有無をチェック
-2. 未記録の場合 → レコード挿入 → 連続記録日数を再計算
-3. カレンダー表示を更新 → 成功フィードバック表示
+### スワイプ点火システムの新データフロー
+1. ユーザーが画面をスワイプ → FlameRecordScreenでジェスチャー検出
+2. 進行度に応じてFlameIgnitionWidgetのアニメーション更新
+3. 70%到達で点火完了 → ハプティックフィードバック + データベース記録
+4. 自動的にStatisticsScreen画面に遷移
 
-### 状態管理パターン
-- **ローカル状態**: 各ウィジェットが独自のUI状態を管理
-- **共有状態**: テーマのみChangeNotifier + InheritedWidgetで管理
-- **データ状態**: メインコーディネーターからの直接データベースアクセス
+### 重要なアニメーション実装
+- **FlameIgnitionWidget**: 3つのAnimationController（ちらつき、発光、スケール）
+- **SwipeGuideAnimation**: 3つのアニメーション（バウンス、フェード、パルス）
+- **責務分離**: スワイプ検出とアニメーション表示を分離
+- **状態同期**: 外部進行度と内部アニメーションの同期
 
 ## データベーススキーマ
 
@@ -158,3 +169,23 @@ MyHomePageの`_recordEffort()`メソッドでtry-catch + SnackBarによるユー
 ### テストの現状
 - 基本的なウィジェットテストが存在するが更新が必要
 - ビジネスロジックのユニットテストとデータベース操作の統合テストが未実装
+
+## 現在の実装状況と課題
+
+### ✅ 完了済み機能
+- 画面分割とナビゲーション（BottomNavigationBar）
+- スワイプによる段階的炎点火アニメーション
+- ハプティックフィードバック（エミュレータ・実機両対応）
+- 自動画面遷移（記録完了後）
+- アニメーション付きスワイプガイド
+- データベース連携と記録機能
+
+### 🔧 既知の課題
+- **炎点火アニメーション**: 現在の実装（ClipRectベース）では視覚的説得力が不足
+  - より自然な「燃え上がる」感覚の実現が必要
+  - パーティクルエフェクトや複数レイヤーの検討が必要
+
+### 重要な実装ノート
+- **エミュレータ対応**: `HapticFeedback.mediumImpact()`使用でMissingPluginException回避
+- **スワイプ範囲**: 画面全体（ヘッダー・フッター除く）でジェスチャー検出
+- **デザイン方針**: Duolingoライクなポップデザイン

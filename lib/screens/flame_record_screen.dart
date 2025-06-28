@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../database_helper.dart';
 import '../theme/theme_provider.dart';
+import '../widgets/flame_ignition_widget.dart';
+import '../widgets/swipe_guide_animation.dart';
 
 class FlameRecordScreen extends StatefulWidget {
   const FlameRecordScreen({
@@ -16,59 +18,17 @@ class FlameRecordScreen extends StatefulWidget {
   State<FlameRecordScreen> createState() => _FlameRecordScreenState();
 }
 
-class _FlameRecordScreenState extends State<FlameRecordScreen>
-    with TickerProviderStateMixin {
+class _FlameRecordScreenState extends State<FlameRecordScreen> {
   final dbHelper = DatabaseHelper.instance;
 
   bool _isRecordedToday = false;
   bool _isLoading = false;
   double _swipeProgress = 0.0; // 0.0 → 1.0
-  bool _isSwipeActive = false;
-
-  late AnimationController _guideController;
-  late Animation<double> _guideOpacity;
-  late Animation<Offset> _guideOffset;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
     _checkTodayRecord();
-  }
-
-  void _initializeAnimations() {
-    _guideController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _guideOpacity = Tween<double>(
-      begin: 0.3,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _guideController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _guideOffset = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: const Offset(0, -0.3),
-    ).animate(
-      CurvedAnimation(
-        parent: _guideController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _guideController.repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _guideController.dispose();
-    super.dispose();
   }
 
   Future<void> _checkTodayRecord() async {
@@ -79,17 +39,22 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
     });
   }
 
+  void _onProgressChanged(double progress) {
+    setState(() {
+      _swipeProgress = progress;
+    });
+  }
+
   void _onSwipeStart(DragStartDetails details) {
     if (_isRecordedToday || _isLoading) return;
-
+    
     setState(() {
-      _isSwipeActive = true;
       _swipeProgress = 0.0;
     });
   }
 
   void _onSwipeUpdate(DragUpdateDetails details) {
-    if (_isRecordedToday || _isLoading || !_isSwipeActive) return;
+    if (_isRecordedToday || _isLoading) return;
 
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
@@ -99,12 +64,10 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
     final progress = 1.0 - (localPosition.dy / size.height);
     final clampedProgress = progress.clamp(0.0, 1.0);
 
-    setState(() {
-      _swipeProgress = clampedProgress;
-    });
+    _onProgressChanged(clampedProgress);
 
-    // 完了判定（50%以上で点火完了に変更してテストしやすく）
-    if (clampedProgress >= 0.5) {
+    // 完了判定（70%以上で点火完了）
+    if (clampedProgress >= 0.7) {
       _onIgnitionComplete();
     }
   }
@@ -113,10 +76,9 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
     if (_isRecordedToday || _isLoading) return;
 
     // 完了していない場合は元に戻す
-    if (_swipeProgress < 0.5) {
+    if (_swipeProgress < 0.7) {
       setState(() {
         _swipeProgress = 0.0;
-        _isSwipeActive = false;
       });
     }
   }
@@ -149,8 +111,7 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
         return;
       }
 
-      // ハプティックフィードバック（エミュレータ対応）
-      HapticFeedback.mediumImpact();
+      // ハプティックフィードバックは FlameIgnitionWidget で処理
 
       await dbHelper.insertEffortRecord(today);
 
@@ -175,7 +136,6 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
         );
         setState(() {
           _swipeProgress = 0.0;
-          _isSwipeActive = false;
         });
       }
     } finally {
@@ -187,19 +147,6 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
     }
   }
 
-  Color _getFlameColor(double progress) {
-    if (progress >= 0.5) {
-      return Colors.red.shade600; // 完了時の赤
-    } else if (progress >= 0.3) {
-      return Color.lerp(Colors.orange.shade400, Colors.red.shade600, (progress - 0.3) * 5) ?? Colors.orange;
-    } else if (progress >= 0.1) {
-      return Color.lerp(Colors.yellow.shade600, Colors.orange.shade400, (progress - 0.1) * 5) ?? Colors.yellow;
-    } else if (progress > 0) {
-      return Color.lerp(Colors.grey.shade400, Colors.yellow.shade600, progress * 10) ?? Colors.grey;
-    } else {
-      return Colors.grey.shade400;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,116 +156,125 @@ class _FlameRecordScreenState extends State<FlameRecordScreen>
       appBar: AppBar(
         title: const Text('頑張りを記録'),
         automaticallyImplyLeading: false, // 戻るボタンを非表示
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
-      body: GestureDetector(
-        onPanStart: _onSwipeStart,
-        onPanUpdate: _onSwipeUpdate,
-        onPanEnd: _onSwipeEnd,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Colors.transparent,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(flex: 2),
-              
-              // 炎アイコン
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // 炎の輪郭
-                  Icon(
-                    Icons.local_fire_department,
-                    size: 120,
-                    color: Colors.grey.shade300,
-                  ),
-                  // 段階的に色づく炎
-                  ClipRect(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      heightFactor: _swipeProgress,
-                      child: Icon(
-                        Icons.local_fire_department,
-                        size: 120,
-                        color: _getFlameColor(_swipeProgress),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // 背景グラデーション
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  tokens.surface,
+                  tokens.surfaceVariant.withOpacity(0.3),
+                  tokens.surface,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+          ),
+          
+          // スワイプ検出エリア（画面全体）
+          GestureDetector(
+            onPanStart: _onSwipeStart,
+            onPanUpdate: _onSwipeUpdate,
+            onPanEnd: _onSwipeEnd,
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.transparent,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    const Spacer(flex: 2),
+                    
+                    // 炎ウィジェット（表示のみ）
+                    Expanded(
+                      flex: 3,
+                      child: FlameIgnitionWidget(
+                        onProgressChanged: _onProgressChanged,
+                        onIgnitionComplete: _onIgnitionComplete,
+                        isRecordedToday: _isRecordedToday,
+                        isLoading: _isLoading,
+                        enableGestures: false, // ジェスチャーを無効化
+                        swipeProgress: _swipeProgress, // 進行度を渡す
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: tokens.spacingXl),
-
-              // 状態表示
-              if (_isRecordedToday)
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: tokens.spacingLg,
-                    vertical: tokens.spacingSm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(tokens.radiusMd),
-                    border: Border.all(color: Colors.green.shade300),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.green.shade700,
-                        size: 20,
-                      ),
-                      SizedBox(width: tokens.spacingSm),
-                      Text(
-                        '今日の頑張りを記録しました！',
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w600,
+                
+                    
+                    SizedBox(height: tokens.spacingXl),
+                    
+                    // 状態表示
+                    if (_isRecordedToday)
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: tokens.spacingLg),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: tokens.spacingLg,
+                          vertical: tokens.spacingMd,
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (_isLoading)
-                const CircularProgressIndicator()
-              else
-                // 操作ガイド
-                AnimatedBuilder(
-                  animation: _guideController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _isSwipeActive ? 0.0 : _guideOpacity.value,
-                      child: Transform.translate(
-                        offset: _guideOffset.value * 20,
-                        child: Column(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.shade50,
+                              Colors.green.shade100,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(tokens.radiusLg),
+                          border: Border.all(
+                            color: Colors.green.shade300,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.shade200.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.keyboard_arrow_up,
-                              size: 32,
-                              color: tokens.onSurfaceVariant,
+                              Icons.check_circle,
+                              color: Colors.green.shade700,
+                              size: 24,
                             ),
-                            SizedBox(height: tokens.spacingSm),
+                            SizedBox(width: tokens.spacingSm),
                             Text(
-                              'スワイプして記録しよう',
+                              '今日の頑張りを記録しました！',
                               style: TextStyle(
-                                fontSize: tokens.fontSizeLg,
-                                color: tokens.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w600,
+                                fontSize: tokens.fontSizeMd,
                               ),
                             ),
                           ],
                         ),
+                      )
+                    else if (_isLoading)
+                      Container(
+                        padding: EdgeInsets.all(tokens.spacingLg),
+                        child: const CircularProgressIndicator(),
+                      )
+                    else
+                      // スワイプガイドアニメーション
+                      SwipeGuideAnimation(
+                        isVisible: !_isRecordedToday && !_isLoading,
+                        isSwipeActive: _swipeProgress > 0.0,
                       ),
-                    );
-                  },
+                    
+                    const Spacer(flex: 2),
+                  ],
                 ),
-
-              const Spacer(flex: 3),
-            ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
