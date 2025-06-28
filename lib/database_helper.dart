@@ -127,4 +127,54 @@ class DatabaseHelper {
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
+  
+  Future<int> deleteTodayRecord() async {
+    Database db = await instance.database;
+    final today = DateTime.now();
+    final dateString = _formatDate(today);
+    
+    return await db.delete(
+      tableEffortRecords,
+      where: '$columnRecordedDate = ?',
+      whereArgs: [dateString],
+    );
+  }
+  
+  Future<int> deleteEffortRecord(DateTime date) async {
+    Database db = await instance.database;
+    final dateString = _formatDate(date);
+    
+    return await db.delete(
+      tableEffortRecords,
+      where: '$columnRecordedDate = ?',
+      whereArgs: [dateString],
+    );
+  }
+  
+  Future<void> deleteAllRecords() async {
+    Database db = await instance.database;
+    await db.delete(tableEffortRecords);
+  }
+  
+  Future<void> createConsecutiveRecords(int days) async {
+    Database db = await instance.database;
+    final today = DateTime.now();
+    
+    for (int i = 0; i < days; i++) {
+      final recordDate = today.subtract(Duration(days: i));
+      final dateString = _formatDate(recordDate);
+      final datetimeString = recordDate.toIso8601String();
+      
+      Map<String, dynamic> row = {
+        columnRecordedDate: dateString,
+        columnRecordedAt: datetimeString,
+      };
+      
+      try {
+        await db.insert(tableEffortRecords, row);
+      } catch (e) {
+        // 重複レコードの場合はスキップ
+      }
+    }
+  }
 }

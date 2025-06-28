@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'widgets/consecutive_days_display.dart';
@@ -110,6 +111,181 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     await _loadMonthlyRecords();
   }
+  
+  Future<void> _deleteTodayRecord() async {
+    final shouldDelete = await _showDeleteConfirmDialog(
+      '今日の記録を削除しますか？',
+      '今日の頭張り記録が削除されます。',
+    );
+    
+    if (shouldDelete == true) {
+      try {
+        await dbHelper.deleteTodayRecord();
+        await _loadData();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('今日の記録を削除しました'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('削除に失敗しました'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
+  }
+  
+  Future<void> _deleteAllRecords() async {
+    final shouldDelete = await _showDeleteConfirmDialog(
+      '全データを削除しますか？',
+      'すべての頭張り記録が完全に削除されます。\nこの操作は元に戻せません。',
+    );
+    
+    if (shouldDelete == true) {
+      try {
+        await dbHelper.deleteAllRecords();
+        await _loadData();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('全データを削除しました'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('削除に失敗しました'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
+  }
+  
+  Future<void> _createTestData() async {
+    try {
+      await dbHelper.createConsecutiveRecords(7);
+      await _loadData();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('7日間のテストデータを作成しました'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('テストデータの作成に失敗しました'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+  
+  Future<bool?> _showDeleteConfirmDialog(String title, String content) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: const Text('削除'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
+  void _showDebugPanel() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        final tokens = context.designTokens;
+        return Container(
+          padding: EdgeInsets.all(tokens.spacingLg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.bug_report),
+                  SizedBox(width: tokens.spacingSm),
+                  const Text(
+                    'デバッグパネル',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: tokens.spacingMd),
+              Text('連続記録日数: $_consecutiveDays日'),
+              Text('今日の記録: ${_isRecordedToday ? 'あり' : 'なし'}'),
+              Text('今月の記録数: ${_recordedDates.length}日'),
+              SizedBox(height: tokens.spacingMd),
+              Wrap(
+                spacing: tokens.spacingSm,
+                children: [
+                  ElevatedButton(
+                    onPressed: _deleteTodayRecord,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                    ),
+                    child: const Text('今日の記録削除'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _createTestData,
+                    child: const Text('7日間データ作成'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _deleteAllRecords,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                    ),
+                    child: const Text('全データ削除'),
+                  ),
+                ],
+              ),
+              SizedBox(height: tokens.spacingMd),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +315,13 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              onPressed: _showDebugPanel,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              child: const Icon(Icons.bug_report),
+            )
+          : null,
     );
   }
 }
